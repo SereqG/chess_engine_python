@@ -20,7 +20,7 @@ def draw_board(gameState, screen):
 
             color = colors[(x + y) % 2]
 
-            if gameState.current_move:
+            if gameState.current_move and len(gameState.current_move.clicks):
                 if (
                     y == gameState.current_move.clicks[0][1]
                     and x == gameState.current_move.clicks[0][0]

@@ -32,35 +32,14 @@ class GameState:
 
     def handle_movement(self, xAxis, yAxis):
         if self.current_move is None:
-
             self.current_move = PieceMovement(self.board)
-            self.current_move.handle_board_click(
-                xAxis,
-                yAxis,
-                self.board,
-                self.modify_board,
-                self.white_turn,
-                self.set_highlighted_squeres,
-                self.prepare_new_state,
-            )
 
-        elif len(self.current_move.clicks) == 1:
-            self.current_move.handle_board_click(
-                xAxis,
-                yAxis,
-                self.board,
-                self.modify_board,
-                self.white_turn,
-                self.set_highlighted_squeres,
-                self.prepare_new_state,
-            )
-        else:
-            self.current_move.handle_board_click(
-                xAxis,
-                yAxis,
-                self.board,
-                self.modify_board,
-                self.white_turn,
-                self.set_highlighted_squeres,
-                self.prepare_new_state,
-            )
+        self.current_move.handle_board_click(
+            xAxis,
+            yAxis,
+            self.board,
+            self.modify_board,
+            self.white_turn,
+            self.set_highlighted_squeres,
+            self.prepare_new_state,
+        )

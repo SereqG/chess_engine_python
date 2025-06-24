@@ -1,152 +1,126 @@
 class PossibleMoves:
-    def __init__(self, piece, xAxis, yAxis, initial_position, boardState):
+    BOARD_SIZE = 8
+    EMPTY = "--"
+
+    # Directions for each piece type
+    ROOK_DIRS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    BISHOP_DIRS = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+    KNIGHT_OFFSETS = [
+        (2, 1),
+        (2, -1),
+        (-2, 1),
+        (-2, -1),
+        (1, 2),
+        (1, -2),
+        (-1, 2),
+        (-1, -2),
+    ]
+    KING_OFFSETS = [
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+        (1, 1),
+        (1, -1),
+        (-1, 1),
+        (-1, -1),
+    ]
+
+    def __init__(self, piece, x, y, initial_position, board):
         self.piece = piece
-        self.x = xAxis
-        self.y = yAxis
+        self.x = x
+        self.y = y
         self.initial_position = initial_position
-        self.board = boardState
+        self.board = board
+        self.color = piece[0]
+        self.type = piece[1]
 
     def get_possible_moves(self):
         move_funcs = {
-            "P": self.pawn_moves,
-            "R": self.rook_moves,
-            "N": self.knight_moves,
-            "B": self.bishop_moves,
-            "Q": self.queen_moves,
-            "K": self.king_moves,
+            "P": self._pawn_moves,
+            "R": self._linear_moves,
+            "N": self._knight_moves,
+            "B": self._diagonal_moves,
+            "Q": self._queen_moves,
+            "K": self._king_moves,
         }
-        return move_funcs.get(self.piece[1], lambda: [])()
+        return move_funcs.get(self.type, lambda: [])()
 
-    def pawn_moves(self):
+    def _on_board(self, x, y):
+        return 0 <= x < self.BOARD_SIZE and 0 <= y < self.BOARD_SIZE
+
+    def _is_opponent(self, target):
+        return target != self.EMPTY and target[0] != self.color
+
+    def _linear_moves(self):
+        return self._sliding_moves(self.ROOK_DIRS)
+
+    def _diagonal_moves(self):
+        return self._sliding_moves(self.BISHOP_DIRS)
+
+    def _sliding_moves(self, directions):
         moves = []
-        direction = -1 if self.piece == "wP" else 1
-        opponent_color = "b" if self.piece == "wP" else "w"
-        start_row = 6 if self.piece == "wP" else 1
+        for dx, dy in directions:
+            nx, ny = self.x, self.y
+            while True:
+                nx += dx
+                ny += dy
+                if not self._on_board(nx, ny):
+                    break
+                target = self.board[ny][nx]
+                if target == self.EMPTY:
+                    moves.append((nx, ny))
+                elif self._is_opponent(target):
+                    moves.append((nx, ny))
+                    break
+                else:
+                    break
+        return moves
 
-        # Capture diagonally
+    def _knight_moves(self):
+        moves = []
+        for dx, dy in self.KNIGHT_OFFSETS:
+            nx, ny = self.x + dx, self.y + dy
+            if self._on_board(nx, ny):
+                target = self.board[ny][nx]
+                if target == self.EMPTY or self._is_opponent(target):
+                    moves.append((nx, ny))
+        return moves
+
+    def _king_moves(self):
+        moves = []
+        for dx, dy in self.KING_OFFSETS:
+            nx, ny = self.x + dx, self.y + dy
+            if self._on_board(nx, ny):
+                target = self.board[ny][nx]
+                if target == self.EMPTY or self._is_opponent(target):
+                    moves.append((nx, ny))
+        return moves
+
+    def _queen_moves(self):
+        return self._linear_moves() + self._diagonal_moves()
+
+    def _pawn_moves(self):
+        moves = []
+        direction = -1 if self.color == "w" else 1
+        opponent_color = "b" if self.color == "w" else "w"
+        start_row = 6 if self.color == "w" else 1
+
+        # Captures
         for dx in (-1, 1):
-
-            # diagonal x
-            nx = self.x + dx
-
-            # diagonal y
-            ny = self.y + direction
-
-            # checks if nx and ny are in range of the board
-            if 0 <= nx < 8 and 0 <= ny < 8:
+            nx, ny = self.x + dx, self.y + direction
+            if self._on_board(nx, ny):
                 target = self.board[ny][nx]
-                if target != "--" and opponent_color in target:
+                if target != self.EMPTY and target[0] == opponent_color:
                     moves.append((nx, ny))
 
-        # Move forward
-        one_step = (self.x, self.y + direction)
-        if self.board[one_step[1]][one_step[0]] == "--":
-            moves.append(one_step)
-
-            # Move two steps from start position
+        # Forward move
+        nx, ny = self.x, self.y + direction
+        if self._on_board(nx, ny) and self.board[ny][nx] == self.EMPTY:
+            moves.append((nx, ny))
+            # Double move from start
             if self.y == start_row:
-                two_step = (self.x, self.y + 2 * direction)
-                if self.board[two_step[1]][two_step[0]] == "--":
-                    moves.append(two_step)
-
-        return moves
-
-    def rook_moves(self):
-        moves = []
-        # Directions for rook movement: up, down, left, right
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        own_color = self.piece[0]
-
-        for dx, dy in directions:
-            nx, ny = self.x, self.y
-            while True:
-                nx += dx
-                ny += dy
-                # Stop if out of board bounds
-                if not (0 <= nx < 8 and 0 <= ny < 8):
-                    break
-                target = self.board[ny][nx]
-                if target == "--":
-                    # Empty square, rook can move here
-                    moves.append((nx, ny))
-                elif target[0] != own_color:
-                    # Opponent's piece, rook can capture and stop
-                    moves.append((nx, ny))
-                    break
-                else:
-                    # Own piece, cannot move further in this direction
-                    break
-        return moves
-
-    def knight_moves(self):
-        # All 8 possible L-shaped moves for a knight
-        offsets = [
-            (2, 1),
-            (2, -1),
-            (-2, 1),
-            (-2, -1),
-            (1, 2),
-            (1, -2),
-            (-1, 2),
-            (-1, -2),
-        ]
-        moves = []
-        own_color = self.piece[0]
-
-        for dx, dy in offsets:
-            nx, ny = self.x + dx, self.y + dy
-            # Check if move is on the board
-            if 0 <= nx < 8 and 0 <= ny < 8:
-                target = self.board[ny][nx]
-                # Add move if square is empty or has opponent's piece
-                if target == "--" or target[0] != own_color:
-                    moves.append((nx, ny))
-        return moves
-
-    def bishop_moves(self):
-        moves = []
-        # Directions for bishop movement: diagonals
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        own_color = self.piece[0]
-
-        for dx, dy in directions:
-            nx, ny = self.x, self.y
-            while True:
-                nx += dx
-                ny += dy
-                # Stop if out of board bounds
-                if not (0 <= nx < 8 and 0 <= ny < 8):
-                    break
-                target = self.board[ny][nx]
-                if target == "--":
-                    # Empty square, bishop can move here
-                    moves.append((nx, ny))
-                elif target[0] != own_color:
-                    # Opponent's piece, bishop can capture and stop
-                    moves.append((nx, ny))
-                    break
-                else:
-                    # Own piece, cannot move further in this direction
-                    break
-        return moves
-
-    def queen_moves(self):
-        # Queen combines rook and bishop moves
-
-        return self.rook_moves() + self.bishop_moves()
-
-    def king_moves(self):
-        moves = []
-        # All 8 possible moves for a king
-        offsets = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
-        own_color = self.piece[0]
-
-        for dx, dy in offsets:
-            nx, ny = self.x + dx, self.y + dy
-            # Check if move is on the board
-            if 0 <= nx < 8 and 0 <= ny < 8:
-                target = self.board[ny][nx]
-                # Add move if square is empty or has opponent's piece
-                if target == "--" or target[0] != own_color:
-                    moves.append((nx, ny))
+                ny2 = self.y + 2 * direction
+                if self._on_board(nx, ny2) and self.board[ny2][nx] == self.EMPTY:
+                    moves.append((nx, ny2))
         return moves

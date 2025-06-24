@@ -2,12 +2,13 @@ import pygame
 from game.config import DIMENTION, SQUERE_SIZE
 
 
-def draw_game(gameState, screen):
-    draw_board(gameState, screen)
+def draw_game(gameState, screen, highlighted_squeres):
+    draw_board(gameState, screen, highlighted_squeres)
     draw_pieces(gameState, screen)
 
 
-def draw_board(gameState, screen):
+def draw_board(gameState, screen, highlighted_squeres):
+    print(highlighted_squeres)
     colors = [
         (247, 247, 220),
         (177, 204, 176),
@@ -19,6 +20,11 @@ def draw_board(gameState, screen):
         for x in range(DIMENTION):
 
             color = colors[(x + y) % 2]
+
+            if len(highlighted_squeres) > 0:
+                for i in highlighted_squeres:
+                    if i[0] == x and i[1] == y:
+                        color = colors[3]
 
             if gameState.current_move and len(gameState.current_move.clicks):
                 if (

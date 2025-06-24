@@ -9,20 +9,22 @@ class PieceMovement:
         self.piece_to_move = ""
         self.board = board
 
-    def handle_board_click(self, xAxis, yAxis, board, modify_board, white_turn):
+    def handle_board_click(
+        self, xAxis, yAxis, board, modify_board, white_turn, set_highlighted_squeres
+    ):
         clicked_squere = board[yAxis][xAxis]
 
         if len(self.clicks) == 0:
             if self.init_click_validation(clicked_squere, white_turn):
                 self.clicks.append((xAxis, yAxis))
                 self.piece_to_move = clicked_squere
-                self.get_possible_moves(xAxis, yAxis)
-                print(self.possible_moves_for_piece)
+                set_highlighted_squeres(self.get_possible_moves(xAxis, yAxis))
                 return
 
         if len(self.clicks) == 1:
             self.clicks.append((xAxis, yAxis))
             modify_board(self.clicks, self.piece_to_move)
+            set_highlighted_squeres([])
 
     def init_click_validation(self, clicked_squere, white_turn):
         if clicked_squere != "--":
@@ -38,9 +40,7 @@ class PieceMovement:
         possible_moves = PossibleMoves(
             self.piece_to_move, xAxis, yAxis, self.clicks[0], self.board
         )
-        self.possible_moves_for_piece = possible_moves.possible_moves[
-            self.piece_to_move
-        ]
+        return possible_moves.get_possible_moves()
 
     def __str__(self):
         return f"Clicks: {self.clicks}"

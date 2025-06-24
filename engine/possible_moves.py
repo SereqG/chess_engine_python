@@ -1,73 +1,46 @@
 class PossibleMoves:
-
     def __init__(self, piece, xAxis, yAxis, initial_position, boardState):
         self.piece = piece
-        self.xAxis = xAxis
-        self.yAxis = yAxis
+        self.x = xAxis
+        self.y = yAxis
         self.initial_position = initial_position
-        self.boardState = boardState
+        self.board = boardState
 
-        self.possible_moves = {
-            "wP": self.pawn_possible_moves(),
-            "bP": self.pawn_possible_moves(),
-        }
+    def get_possible_moves(self):
+        if self.piece in ("wP", "bP"):
+            return self.pawn_moves()
+        return []
 
-    def pawn_possible_moves(self):
-        possible_moves = []
-        if self.piece == "wP":
-            diagonally_possitions = [
-                {
-                    "possition": (self.xAxis - 1, self.yAxis - 1),
-                    "oponent": self.boardState[self.yAxis - 1][self.xAxis - 1],
-                },
-                {
-                    "possition": (self.xAxis + 1, self.yAxis - 1),
-                    "oponent": self.boardState[self.yAxis - 1][self.xAxis + 1],
-                },
-            ]
+    def pawn_moves(self):
+        moves = []
+        direction = -1 if self.piece == "wP" else 1
+        opponent_color = "b" if self.piece == "wP" else "w"
+        start_row = 6 if self.piece == "wP" else 1
 
-            for i in diagonally_possitions:
-                if i["oponent"] != "--" and "b" in i["oponent"]:
-                    possible_moves.append(i["possition"])
+        # Capture diagonally
+        for dx in (-1, 1):
 
-            if self.initial_position[1] == 6:
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] - 1)
-                )
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] - 2),
-                )
-            else:
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] - 1)
-                )
+            # diagonal x
+            nx = self.x + dx
 
-        else:
-            diagonally_possitions = [
-                {
-                    "possition": (self.xAxis + 1, self.yAxis + 1),
-                    "oponent": self.boardState[self.yAxis + 1][self.xAxis + 1],
-                },
-                {
-                    "possition": (self.xAxis - 1, self.yAxis + 1),
-                    "oponent": self.boardState[self.yAxis + 1][self.xAxis - 1],
-                },
-            ]
+            # diagonal y
+            ny = self.y + direction
 
-            for i in diagonally_possitions:
-                if i["oponent"] != "--" and "w" in i["oponent"]:
-                    possible_moves.append(i["possition"])
+            # checks if nx and ny are in range of the board
+            if 0 <= nx < 8 and 0 <= ny < 8:
+                target = self.board[ny][nx]
+                if target != "--" and opponent_color in target:
+                    moves.append((nx, ny))
 
-            if self.initial_position[1] == 1:
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] + 1)
-                )
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] + 2),
-                )
-            else:
-                possible_moves.append(
-                    (self.initial_position[0], self.initial_position[1] + 1)
-                )
+        # Move forward
+        one_step = (self.x, self.y + direction)
+        if self.board[one_step[1]][one_step[0]] == "--":
+            moves.append(one_step)
 
-        return possible_moves
+            # Move two steps from start position
+            if self.y == start_row:
+                two_step = (self.x, self.y + 2 * direction)
+                if self.board[two_step[1]][two_step[0]] == "--":
+                    moves.append(two_step)
+
+        return moves

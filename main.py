@@ -19,7 +19,7 @@ def main():
 
         event_detection(gameState)
         screen.fill("white")
-        draw_game(gameState, screen)
+        draw_game(gameState, screen, gameState.highlighted_squeres)
 
         pygame.display.flip()  # Refresh on-screen display
         clock.tick(60)

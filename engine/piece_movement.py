@@ -1,3 +1,4 @@
+from turtle import reset
 from engine.possible_moves import PossibleMoves
 
 
@@ -9,8 +10,19 @@ class PieceMovement:
         self.piece_to_move = ""
         self.board = board
 
+    def reset(self):
+        self.clicks = []
+        self.piece_to_move = ""
+
     def handle_board_click(
-        self, xAxis, yAxis, board, modify_board, white_turn, set_highlighted_squeres
+        self,
+        xAxis,
+        yAxis,
+        board,
+        modify_board,
+        white_turn,
+        set_highlighted_squeres,
+        prepare_new_state,
     ):
         clicked_squere = board[yAxis][xAxis]
 
@@ -23,8 +35,16 @@ class PieceMovement:
 
         if len(self.clicks) == 1:
             self.clicks.append((xAxis, yAxis))
+            if (
+                self.clicks[0][0] == self.clicks[1][0]
+                and self.clicks[0][1] == self.clicks[1][1]
+            ):
+                self.reset()
+                set_highlighted_squeres([])
+                return
             modify_board(self.clicks, self.piece_to_move)
             set_highlighted_squeres([])
+            prepare_new_state()
 
     def init_click_validation(self, clicked_squere, white_turn):
         if clicked_squere != "--":

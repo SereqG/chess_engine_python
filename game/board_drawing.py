@@ -8,12 +8,11 @@ def draw_game(gameState, screen, highlighted_squeres):
 
 
 def draw_board(gameState, screen, highlighted_squeres):
-    print(highlighted_squeres)
     colors = [
         (247, 247, 220),
         (177, 204, 176),
         (119, 149, 201),
-        (201, 119, 142),
+        (201, 119, 142, 0.3),
     ]  # [light, dark, marked, target]
 
     for y in range(DIMENTION):

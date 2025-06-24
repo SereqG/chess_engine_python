@@ -25,6 +25,11 @@ class GameState:
     def set_highlighted_squeres(self, squeres):
         self.highlighted_squeres = squeres
 
+    def prepare_new_state(self):
+        self.move_logs.append(self.current_move)
+        self.current_move = None
+        self.white_turn = not self.white_turn
+
     def handle_movement(self, xAxis, yAxis):
         if self.current_move is None:
 
@@ -36,8 +41,8 @@ class GameState:
                 self.modify_board,
                 self.white_turn,
                 self.set_highlighted_squeres,
+                self.prepare_new_state,
             )
-            print(self.highlighted_squeres)
 
         elif len(self.current_move.clicks) == 1:
             self.current_move.handle_board_click(
@@ -47,10 +52,8 @@ class GameState:
                 self.modify_board,
                 self.white_turn,
                 self.set_highlighted_squeres,
+                self.prepare_new_state,
             )
-            self.move_logs.append(self.current_move)
-            self.current_move = None
-            self.white_turn = not self.white_turn
         else:
             self.current_move.handle_board_click(
                 xAxis,
@@ -59,4 +62,5 @@ class GameState:
                 self.modify_board,
                 self.white_turn,
                 self.set_highlighted_squeres,
+                self.prepare_new_state,
             )

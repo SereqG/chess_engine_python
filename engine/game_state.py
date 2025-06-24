@@ -25,6 +25,9 @@ class GameState:
     def set_highlighted_squeres(self, squeres):
         self.highlighted_squeres = squeres
 
+    def get_highlighted_squares(self):
+        return self.highlighted_squares
+
     def prepare_new_state(self):
         self.move_logs.append(self.current_move)
         self.current_move = None
@@ -42,4 +45,5 @@ class GameState:
             self.white_turn,
             self.set_highlighted_squeres,
             self.prepare_new_state,
+            self.get_highlighted_squares,
         )
